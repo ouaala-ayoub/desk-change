@@ -1,0 +1,3 @@
+class Mapable {
+  toMap() {}
+}
