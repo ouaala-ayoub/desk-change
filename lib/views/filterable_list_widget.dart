@@ -151,7 +151,7 @@ class _FilterableListWidgetState<T> extends State<FilterableListWidget> {
       required Function(String) popMenu,
       required Function(String) navigateToItemPage,
       required BuildContext buildContext}) {
-    final menuList = [
+    final List<MenuItemButton> menuList = [
       MenuItemButton(
           child: const Text('Supprimer'),
           onPressed: () {
@@ -171,9 +171,13 @@ class _FilterableListWidgetState<T> extends State<FilterableListWidget> {
             context.push("/users/${item['_id']}/passwordModify");
           }));
     }
+    final elementKey = GlobalKey();
     return GestureDetector(
       onTap: () {
         navigateToItemPage(item['_id']);
+        //todo add this functionality
+        // Offset offset = getWidgetOffset(context, elementKey);
+        // showPopupMenu(context, offset, menuList);
       },
       child: Padding(
         padding: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
@@ -192,6 +196,7 @@ class _FilterableListWidgetState<T> extends State<FilterableListWidget> {
             children: [
               Text(item['name'].toString()),
               MenuAnchor(
+                key: elementKey,
                 menuChildren: menuList,
                 builder: (context, controller, child) {
                   return GestureDetector(
@@ -216,6 +221,37 @@ class _FilterableListWidgetState<T> extends State<FilterableListWidget> {
       ),
     );
   }
+
+  // Offset getWidgetOffset(BuildContext context, GlobalKey widgetKey) {
+  //   RenderBox renderBox =
+  //       widgetKey.currentContext!.findRenderObject() as RenderBox;
+  //   return renderBox.localToGlobal(Offset.zero);
+  // }
+
+  // void showPopupMenu(
+  //     BuildContext context, Offset anchorOffset, List<PopupMenuItem> items) {
+  //   final RenderBox overlay =
+  //       Overlay.of(context).context.findRenderObject() as RenderBox;
+  //   final RelativeRect position = RelativeRect.fromRect(
+  //     Rect.fromPoints(
+  //       anchorOffset,
+  //       anchorOffset.translate(0.0, 50.0), // Adjust the offset as needed
+  //     ),
+  //     Offset.zero & overlay.size,
+  //   );
+
+  //   showMenu(
+  //     context: context,
+  //     position: position,
+  //     items: items,
+  //     elevation: 8.0,
+  //   ).then<void>((dynamic value) {
+  //     // Handle the selection from the menu
+  //     if (value != null) {
+  //       print('Selected option: $value');
+  //     }
+  //   });
+  // }
 
   Future<dynamic> showDeleteDialog(String id, BuildContext buildContext) {
     final progress = ProgressHUD.of(buildContext);
