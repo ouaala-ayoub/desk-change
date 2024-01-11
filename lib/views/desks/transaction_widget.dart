@@ -25,11 +25,11 @@ class TransactionWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("ID: ${transaction.id}"),
             Text(
-              "type : ${transaction.type}",
+              "Type : ${transaction.type}",
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
+            Text("ID: ${transaction.id}"),
             Row(
               children: [
                 const Icon(

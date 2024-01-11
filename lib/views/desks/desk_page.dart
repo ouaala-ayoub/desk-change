@@ -3,7 +3,9 @@ import 'package:gestionbureaudechange/models/helpers/desks_helper.dart';
 import 'package:gestionbureaudechange/providers/entity_page_provider.dart';
 import 'package:gestionbureaudechange/views/auth_page.dart';
 import 'package:provider/provider.dart';
-import '../../models/helpers/functions.dart';
+import '../../models/core/data_filter_types.dart';
+import '../../models/core/transaction.dart';
+import 'stock_widget.dart';
 import 'transaction_widget.dart';
 
 class DeskPage extends StatefulWidget {
@@ -20,16 +22,18 @@ class _DeskPageState extends State<DeskPage> {
   @override
   void initState() {
     super.initState();
-    context.read<EntityPageProvider<DeskAndTransactions>>().getData(widget.id);
+    context
+        .read<FilterableEntity<DeskAndTransactions, Transaction>>()
+        .getData(widget.id);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Page de bureau')),
-      body: Consumer<EntityPageProvider<DeskAndTransactions>>(
+      body: Consumer<FilterableEntity<DeskAndTransactions, Transaction>>(
           builder: (context, value, child) {
-        return value.loding
+        return value.loading
             ? const Center(
                 child: CircularProgressIndicator(),
               )
@@ -40,18 +44,25 @@ class _DeskPageState extends State<DeskPage> {
                   refreshFunction: () => value.getData(widget.id),
                 );
               }, (data) {
-                return onLoadingComplete(data);
+                return value.filterRes.fold(
+                    (e) => ErrorScreen(
+                        refreshFunction: () => value.getData(widget.id),
+                        message: 'error'),
+                    (transactions) => RefreshIndicator(
+                          child: onLoadingComplete(data, transactions, value),
+                          onRefresh: () async {
+                            await value.getData(widget.id);
+                          },
+                        ));
               }));
       }),
     );
   }
 
-  Padding onLoadingComplete(DeskAndTransactions data) {
+  Padding onLoadingComplete(DeskAndTransactions data,
+      List<Transaction> transactions, FilterableEntity provider) {
     final stockEmpty = data.desk.stock?.toMap().isEmpty;
-    final transactionsEmpty = data.transactions.isEmpty;
-
-    //sort by date
-    data.transactions.sort((a, b) => b.createdAt!.compareTo(a.createdAt!));
+    final transactionsEmpty = transactions.isEmpty;
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -117,115 +128,62 @@ class _DeskPageState extends State<DeskPage> {
               const SizedBox(
                 height: 10,
               ),
-              !transactionsEmpty
-                  ? ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: data.transactions.length,
-                      itemBuilder: (context, index) {
-                        final transaction = data.transactions[index];
-                        return TransactionWidget(transaction: transaction);
-                      },
-                    )
-                  : const Text('Pas de transactions Enregistrées')
+              Column(
+                children: [
+                  const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Filtre :',
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 20),
+                      )),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ChoiceChip(
+                        label: const Text('achat'),
+                        selected: provider.filters['type'] == 'achat',
+                        onSelected: (selected) =>
+                            provider.handleSelection(selected, 'type', 'achat'),
+                      ),
+                      ChoiceChip(
+                        label: const Text('vente'),
+                        selected: provider.filters['type'] == 'vente',
+                        onSelected: (selected) =>
+                            provider.handleSelection(selected, 'type', 'vente'),
+                      ),
+                      DropdownMenu(
+                        label: const Text(
+                          'Temps',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                        onSelected: (value) =>
+                            provider.setFilter('date', value),
+                        inputDecorationTheme: const InputDecorationTheme(
+                            border: InputBorder.none),
+                        dropdownMenuEntries: dateFilters
+                            .map((element) => DropdownMenuEntry(
+                                value: dateFiltersMap[element], label: element))
+                            .toList(),
+                      )
+                    ],
+                  ),
+                  !transactionsEmpty
+                      ? ListView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          itemCount: transactions.length,
+                          itemBuilder: (context, index) {
+                            final transaction = transactions[index];
+                            return TransactionWidget(transaction: transaction);
+                          },
+                        )
+                      : const Text('Pas de transactions Enregistrées')
+                ],
+              )
             ],
           )
         ],
-      ),
-    );
-  }
-}
-
-class StockWidget extends StatefulWidget {
-  const StockWidget({
-    super.key,
-    required this.stockKey,
-    required this.value,
-    required this.tauxValue,
-  });
-  final String stockKey;
-  final Map<dynamic, dynamic> value;
-  final double tauxValue;
-
-  @override
-  State<StockWidget> createState() => _StockWidgetState();
-}
-
-class _StockWidgetState extends State<StockWidget> {
-  bool _isTauxVisible = false;
-
-  switchTauxVisibility() {
-    setState(() {
-      _isTauxVisible = !_isTauxVisible;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => switchTauxVisibility(),
-      child: Card(
-        child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                RichText(
-                  text: TextSpan(
-                      text: '${widget.stockKey} : ',
-                      style: const TextStyle(color: Colors.red, fontSize: 18),
-                      children: [
-                        TextSpan(
-                            text: formatNumberWithCommas(
-                                double.parse(widget.value['amount'])),
-                            style: const TextStyle(color: Color(0xff202c34)))
-                      ]),
-                ),
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.sync_outlined,
-                      color: Colors.black,
-                    ),
-                    RichText(
-                      text: TextSpan(
-                          text: 'Taux Moyen : ',
-                          style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold),
-                          children: [
-                            TextSpan(
-                                text: formatNumberWithCommas(widget.tauxValue),
-                                style:
-                                    const TextStyle(color: Color(0xff202c34)))
-                          ]),
-                    ),
-                  ],
-                ),
-                RichText(
-                  text: TextSpan(
-                      text: 'MAD : ',
-                      style: const TextStyle(color: Colors.red, fontSize: 18),
-                      children: [
-                        TextSpan(
-                            text: formatNumberWithCommas(
-                                double.parse(widget.value['mad'])),
-                            style: const TextStyle(color: Color(0xff202c34)))
-                      ]),
-                ),
-                Visibility(
-                  visible: _isTauxVisible,
-                  child: Text(
-                    'Taux Moyen exacte : ${widget.tauxValue}',
-                    style: const TextStyle(
-                        color: Color(0xff202c34),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18),
-                  ),
-                )
-              ],
-            )),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gestionbureaudechange/models/core/transaction.dart';
 import 'package:gestionbureaudechange/models/core/user/user.dart';
 import 'package:gestionbureaudechange/models/helpers/desks_helper.dart';
 import 'package:gestionbureaudechange/models/helpers/users_helper.dart';
@@ -64,7 +65,7 @@ class MyApp extends StatelessWidget {
         final id = state.pathParameters['id']!;
         return ChangeNotifierProvider(
           create: (context) =>
-              EntityPageProvider<DeskAndTransactions>(DesksHelper()),
+              FilterableEntity<DeskAndTransactions, Transaction>(DesksHelper()),
           child: DeskPage(id: id),
         );
       },

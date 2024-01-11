@@ -28,7 +28,7 @@ class _UserPageState extends State<UserPage> {
       appBar: AppBar(title: const Text("Page d'utilisateur")),
       body: Consumer<EntityPageProvider<User>>(
         builder: (context, value, child) {
-          return value.loding
+          return value.loading
               ? const Center(child: CircularProgressIndicator())
               : Center(
                   child: value.data?.fold((l) {
