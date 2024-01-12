@@ -7,6 +7,7 @@ class Transaction {
   double? amount;
   double? mad;
   double? currencyValue;
+  double? arretRate;
   String? desk;
   double? acv;
   double? profit;
@@ -21,6 +22,7 @@ class Transaction {
     this.amount,
     this.mad,
     this.currencyValue,
+    this.arretRate,
     this.desk,
     this.acv,
     this.profit,
@@ -36,6 +38,7 @@ class Transaction {
         amount: (data['amount'] as num?)?.toDouble(),
         mad: (data['mad'] as num?)?.toDouble(),
         currencyValue: (data['currencyValue'] as num?)?.toDouble(),
+        arretRate: (data['arretRate'] as num?)?.toDouble(),
         desk: data['desk'] as String?,
         profit: (data['profit'] as num?)?.toDouble(),
         createdAt: data['createdAt'] == null
@@ -54,6 +57,7 @@ class Transaction {
         'amount': amount,
         'mad': mad,
         'currencyValue': currencyValue,
+        'arretRate': currencyValue,
         'desk': desk,
         'acv': acv,
         'profit': profit,
@@ -73,34 +77,4 @@ class Transaction {
   ///
   /// Converts [Transaction] to a JSON string.
   String toJson() => json.encode(toMap());
-
-  Transaction copyWith({
-    String? id,
-    String? type,
-    String? currency,
-    double? amount,
-    double? mad,
-    double? currencyValue,
-    String? desk,
-    double? acv,
-    double? profit,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    int? v,
-  }) {
-    return Transaction(
-      id: id ?? this.id,
-      type: type ?? this.type,
-      currency: currency ?? this.currency,
-      amount: amount ?? this.amount,
-      mad: mad ?? this.mad,
-      currencyValue: currencyValue ?? this.currencyValue,
-      desk: desk ?? this.desk,
-      acv: acv ?? this.acv,
-      profit: profit ?? this.profit,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      v: v ?? this.v,
-    );
-  }
 }

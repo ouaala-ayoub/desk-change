@@ -65,22 +65,24 @@ class FilterableEntity<T, F> extends EntityPageProvider {
         final transactions = (data as DeskAndTransactions).transactions;
         final found = transactions.where((element) {
           final typeCondition = element.type == filters['type'];
+          final dateCondition = _isSameDay(element.createdAt!, filters['date']);
 
           if (filters['type'] == null) {
-            final dateCondition = element.createdAt!.isAfter(
-                DateTime.now().subtract(Duration(days: filters['date'])));
             return dateCondition;
           } else if (filters['date'] == null) {
             return typeCondition;
           }
-
-          final dateCondition = element.createdAt!.isAfter(
-              DateTime.now().subtract(Duration(days: filters['date'])));
 
           return typeCondition && dateCondition;
         }).toList();
         return Right(found);
       });
     }
+  }
+
+  bool _isSameDay(DateTime date1, DateTime? date2) {
+    return date1.year == date2?.year &&
+        date1.month == date2?.month &&
+        date1.day == date2?.day;
   }
 }

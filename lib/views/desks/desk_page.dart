@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:gestionbureaudechange/models/helpers/desks_helper.dart';
 import 'package:gestionbureaudechange/providers/entity_page_provider.dart';
-import 'package:gestionbureaudechange/views/auth_page.dart';
 import 'package:provider/provider.dart';
-import '../../models/core/data_filter_types.dart';
 import '../../models/core/transaction.dart';
-import 'stock_widget.dart';
-import 'transaction_widget.dart';
+import '../helper_widgets/error_screen.dart';
+import '../helper_widgets/stock_widget.dart';
+import '../helper_widgets/transaction_widget.dart';
 
 class DeskPage extends StatefulWidget {
   final String id;
@@ -138,34 +137,52 @@ class _DeskPageState extends State<DeskPage> {
                             fontWeight: FontWeight.bold, fontSize: 20),
                       )),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      ChoiceChip(
-                        label: const Text('achat'),
-                        selected: provider.filters['type'] == 'achat',
-                        onSelected: (selected) =>
-                            provider.handleSelection(selected, 'type', 'achat'),
-                      ),
-                      ChoiceChip(
-                        label: const Text('vente'),
-                        selected: provider.filters['type'] == 'vente',
-                        onSelected: (selected) =>
-                            provider.handleSelection(selected, 'type', 'vente'),
-                      ),
-                      DropdownMenu(
-                        label: const Text(
-                          'Temps',
-                          style: TextStyle(color: Colors.black),
+                      Expanded(
+                        child: ChoiceChip(
+                          label: const Text('achat'),
+                          selected: provider.filters['type'] == 'achat',
+                          onSelected: (selected) => provider.handleSelection(
+                              selected, 'type', 'achat'),
                         ),
-                        onSelected: (value) =>
-                            provider.setFilter('date', value),
-                        inputDecorationTheme: const InputDecorationTheme(
-                            border: InputBorder.none),
-                        dropdownMenuEntries: dateFilters
-                            .map((element) => DropdownMenuEntry(
-                                value: dateFiltersMap[element], label: element))
-                            .toList(),
-                      )
+                      ),
+                      Expanded(
+                        child: ChoiceChip(
+                          label: const Text('vente'),
+                          selected: provider.filters['type'] == 'vente',
+                          onSelected: (selected) => provider.handleSelection(
+                              selected, 'type', 'vente'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      OutlinedButton(
+                          onPressed: () async {
+                            final selected = await showDatePicker(
+                                context: context,
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2050));
+
+                            if (selected != null) {
+                              provider.setFilter('date', selected);
+                            }
+                          },
+                          child: Text(provider.filters['date'] != null
+                              ? provider.filters['date']
+                                  .toString()
+                                  .split(' ')[0]
+                              : 'Choisir une date')),
+                      OutlinedButton(
+                          onPressed: () {
+                            if (provider.filters['date'] != null) {
+                              provider.setFilter('date', null);
+                            }
+                          },
+                          child: Text('Clear'))
                     ],
                   ),
                   !transactionsEmpty

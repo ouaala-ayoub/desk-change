@@ -45,7 +45,17 @@ class TransactionWidget extends StatelessWidget {
                   Icons.sync_outlined,
                   color: Colors.black,
                 ),
-                Text("Taux: ${transaction.currencyValue.toString()}"),
+                taux(context, 'Taux ${transaction.type}',
+                    transaction.currencyValue.toString()),
+              ],
+            ),
+            Row(
+              children: [
+                const Icon(
+                  Icons.sync_outlined,
+                  color: Colors.black,
+                ),
+                taux(context, 'Taux arret', transaction.arretRate),
               ],
             ),
             Row(
@@ -57,13 +67,56 @@ class TransactionWidget extends StatelessWidget {
                 Text(outValue),
               ],
             ),
+            RichText(
+              text: TextSpan(
+                style: DefaultTextStyle.of(context).style,
+                children: <TextSpan>[
+                  const TextSpan(
+                    text: 'Profit : ',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(
+                    text: '${transaction.profit ?? '0'} MAD',
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Text(
-              'crée le ${transaction.createdAt}',
+              'crée le : ${transaction.createdAt}',
               style:
                   const TextStyle(color: CupertinoColors.black, fontSize: 16),
             )
           ],
         ),
+      ),
+    );
+  }
+
+  RichText taux(BuildContext context, text, currencyValue) {
+    return RichText(
+      text: TextSpan(
+        style: DefaultTextStyle.of(context).style,
+        children: <TextSpan>[
+          TextSpan(
+            text: '$text ',
+            style: const TextStyle(
+                color: Colors.black, fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+          TextSpan(
+            text: '${currencyValue ?? ' ---'}',
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+            ),
+          ),
+        ],
       ),
     );
   }
