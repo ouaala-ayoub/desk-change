@@ -65,8 +65,11 @@ class UserModifyProvider extends ChangeNotifier {
   getData(String id) async {
     try {
       loading = true;
-      final user = await UsersApi.getUserById(id);
-      final desks = await DesksApi.getAllDesks();
+
+      final results =
+          await Future.wait([UsersApi.getUserById(id), DesksApi.getAllDesks()]);
+      final user = results[0];
+      final desks = results[1];
       final list = desks.map((desk) => Desk.fromMap(desk)).toList();
 
       controllersMap['name']!.text = user['name'];

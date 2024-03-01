@@ -29,10 +29,16 @@ class DesksHelper extends Helper {
   @override
   Future<Either<dynamic, DeskAndTransactions>> getElement(String id) async {
     try {
-      final desk = await DesksApi.getDeskById(id);
-      final transactions = await DesksApi.getDeskTransactions(id);
-      return Right(DeskAndTransactions(Desk.fromMap(desk),
-          transactions.map((map) => Transaction.fromMap(map)).toList()));
+      final results = await Future.wait(
+          [DesksApi.getDeskById(id), DesksApi.getDeskTransactions(id)]);
+      final desk = results[0];
+      final transactions = results[1];
+      return Right(
+        DeskAndTransactions(
+          Desk.fromMap(desk),
+          transactions.map((map) => Transaction.fromMap(map)).toList(),
+        ),
+      );
     } catch (e) {
       logger.e(e.toString());
       return Left(e);
